@@ -1,0 +1,160 @@
+import math
+
+import random
+
+class Board:
+	
+	def __init__(self):
+		self.board_full = ["-" + "." + str(i) for i in range(9)]
+		self.board = [(item.split(".")[0]) for item in self.board_full]
+		self.board_count = [int(item.split(".")[1]) for item in self.board_full]
+		self.display = self.display_board
+		
+	def display_board(self):
+		print(self.board[0] + '|' + self.board[1] + "|" + self.board[2])
+		print(self.board[3] + '|' + self.board[4] + "|" + self.board[5])
+		print(self.board[6] + '|' + self.board[7] + "|" + self.board[8])
+
+	def update_board(self, board_no, player):
+		#board_no = int(board_no)
+		if self.board[board_no] == "-":
+			self.board[board_no] = player
+			self.board_count.remove(board_no)
+			print("comp choice:", self.board_count)
+		else:
+			print("TRY AGAIN")
+			pass				
+	def win_condition(self, board_no, player):
+		# check for row
+		
+		# this checks active row
+		row_ind = (math.floor(board_no/3))
+		
+		# this will give a whole row ie [0,1,2] (the first row)
+		row = self.board[row_ind * 3: (row_ind + 1 )*3]
+		#print("row:", row)
+		
+		if all([x == player for x in row]):
+			return True
+
+		# check for col
+		# this checks active column 	
+		col_ind = board_no % 3
+		
+		# this uses list comp to create col's ie [0,3,6] (the first col)
+		col = [self.board[col_ind + i * 3] for i in range(3)]
+		if all([x == player for x in col]):
+			return True
+		#print("col:", col)
+		
+		
+		# checks for even numbers on board 
+		if board_no % 2 == 0:
+			diag1 = [self.board[i] for i in [0,4,8]]
+			#print("diag1:", diag1)
+			if all([x == player for x in diag1]):
+				return True
+			diag2 = [self.board[i] for i in [2,4,6]]
+			#print("diag2:", diag2)
+			if all([x == player for x in diag2]):
+				return True
+
+	# selects random value of available moves
+	def random_comp(self):
+		rand = random.choice(self.board_count)
+		return rand
+
+	#resets board
+	def reset(self):
+		self.board = [(item.split(".")[0]) for item in self.board_full]
+
+
+class SmartComp(Board):
+
+	def __init__(self):
+		super().__init__()
+
+	def get_move(self):
+		move = random.choice(board.board_count)
+		return move
+
+	def minimax(self):
+		# sees if "X" will win
+		if board.win_condition(self.get_move(), "X") is True:
+			move = int(self.get_move())
+			board.update_board(move,"O")
+			print("move:", move)
+			return move
+		# sees if "O" will win
+		elif board.win_condition(self.get_move(), "O") is True:
+			move = int(self.get_move())
+			board.update_board(move, "O")
+			print("move:", move)
+			return move
+		else:
+			# plays random value
+			self.get_move()
+
+
+
+active_game = True
+				
+board = Board()
+smart_comp = SmartComp()
+def game_play():
+	global active_game	
+	while active_game:
+		smart_comp.get_move()
+		smart_comp.minimax()
+
+		board.display_board()
+		
+		user = input("Make move:")
+		
+		while user not in [str(i) for i in range(9)]:
+			user = input("Invalid, make move:")
+
+		user = int(user)
+		board.update_board(user, "X")
+
+		if board.win_condition(user, "X") is True:
+			board.display_board()
+			active_game = False
+			print("X WINS!")
+			break
+
+		if len(board.board_count) == 0:
+			pass	
+		else:
+			# comp choice
+			
+			comp = board.random_comp()
+			#comp = smart_comp.minimax()
+			
+			# updates board with comp
+			board.update_board(comp, "O")
+
+		if board.win_condition(comp, "O") is True:
+			#board.display_board()
+			active_game = False
+			print("O WINS!")
+			break
+
+		if board.board.count("-") == 0:
+			board.display_board()
+			active_game = False
+			print("TIE!")
+			break
+
+	# resest game
+	while active_game is False:
+		replay = input("Would you like to play again?")
+		if replay == "yes":
+			active_game = True
+			board.reset()
+			game_play()
+
+		else:
+			break
+
+game_play()
